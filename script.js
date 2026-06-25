@@ -42,8 +42,7 @@ const revealSelectors = [
   ".resource-card",
   ".timeline-strip > div",
   ".career-callout",
-  ".demo-form",
-  ".trust-logos span"
+  ".demo-form"
 ];
 
 const revealElements = document.querySelectorAll(revealSelectors.join(","));
