@@ -50,6 +50,15 @@ body.nav-open {
   overflow: hidden;
 }
 
+body.has-view-routing [data-view] {
+  display: none;
+}
+
+body.has-view-routing [data-view].is-active-view {
+  display: block;
+  animation: viewEnter 320ms ease-out;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -164,10 +173,15 @@ svg {
 }
 
 .primary-nav a:hover,
-.primary-nav a:focus-visible {
+.primary-nav a:focus-visible,
+.primary-nav a[aria-current="page"] {
   color: var(--blue);
   background: #eff6ff;
   outline: none;
+}
+
+.primary-nav a[aria-current="page"] {
+  box-shadow: inset 3px 0 0 var(--teal);
 }
 
 .nav-toggle,
@@ -1491,6 +1505,18 @@ h3 {
   }
 }
 
+@keyframes viewEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes growBar {
   from {
     transform: scaleY(0.18);
@@ -1693,6 +1719,10 @@ h3 {
   .primary-nav a {
     padding: 8px 10px;
     font-size: 13px;
+  }
+
+  .primary-nav a[aria-current="page"] {
+    box-shadow: inset 0 -2px 0 var(--teal);
   }
 
   .hero {
