@@ -88,17 +88,19 @@ window.addEventListener("scroll", () => {
 
 const revealSelectors = [
   ".section-heading",
-  ".comparison-card",
-  ".feature-card",
-  ".industry-card",
-  ".diff-card",
-  ".process-card",
-  ".metric-block",
-  ".testimonial-card",
+  ".photo-card",
+  ".story-photo",
+  ".module-card",
+  ".solution-row",
+  ".differentiator-grid article",
+  ".process-grid article",
+  ".metrics-grid > div",
+  ".testimonial-grid blockquote",
   ".price-card",
   ".resource-card",
-  ".timeline-strip > div",
-  ".career-callout",
+  ".about-gallery",
+  ".about-values > div",
+  ".contact-panel",
   ".demo-form"
 ];
 
