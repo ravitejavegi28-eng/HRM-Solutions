@@ -1,8 +1,6 @@
 const navToggle = document.querySelector("[data-nav-toggle]");
 const nav = document.querySelector("[data-nav]");
 const header = document.querySelector("[data-header]");
-const form = document.querySelector("[data-demo-form]");
-const formNote = document.querySelector("[data-form-note]");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const viewSections = document.querySelectorAll("[data-view]");
 const routedLinks = document.querySelectorAll('a[href^="#"]');
@@ -99,9 +97,7 @@ const revealSelectors = [
   ".price-card",
   ".resource-card",
   ".about-gallery",
-  ".about-values > div",
-  ".contact-panel",
-  ".demo-form"
+  ".about-values > div"
 ];
 
 const revealElements = document.querySelectorAll(revealSelectors.join(","));
@@ -128,21 +124,6 @@ if (prefersReducedMotion) {
 
   revealElements.forEach((element) => revealObserver.observe(element));
 }
-
-form?.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
-  }
-
-  form.reset();
-  if (formNote) {
-    formNote.textContent = "Thanks. We will contact you shortly to schedule your HRM demo.";
-    formNote.classList.add("is-success");
-  }
-});
 
 const initialView = getViewFromHash(window.location.hash);
 if (!window.location.hash || !validViews.has(window.location.hash.slice(1))) {
