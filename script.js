@@ -1,186 +1,107 @@
-const navToggle = document.querySelector("[data-nav-toggle]");
-const nav = document.querySelector("[data-nav]");
+// Preserve previously shared hash links while moving to full HTML pages.
+const legacyRoutes = {
+  home: "/", product: "/software-implementation/", solutions: "/software-implementation/",
+  why: "/us-staffing/", pricing: "/contact/?service=implementation",
+  resources: "/resources/", about: "/about/", contact: "/contact/"
+};
+const redirectLegacyHash = () => {
+  if (!["/", "/index.html"].includes(window.location.pathname)) return;
+  const key = window.location.hash.slice(1);
+  const destination = Object.hasOwn(legacyRoutes, key) ? legacyRoutes[key] : null;
+  if (destination === "/") window.history.replaceState(null, "", "/");
+  else if (destination) window.location.replace(destination);
+};
+redirectLegacyHash();
+window.addEventListener("hashchange", redirectLegacyHash);
 const header = document.querySelector("[data-header]");
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const viewSections = document.querySelectorAll("[data-view]");
-const routedLinks = document.querySelectorAll('a[href^="#"]');
-const validViews = new Set(Array.from(viewSections, (section) => section.dataset.view));
-const viewTitles = {
-  home: "HR Software & US Staffing",
-  product: "HR Software",
-  solutions: "HR Software by Industry",
-  why: "US Staffing Services",
-  pricing: "HR Software Pricing",
-  resources: "HR & Hiring Guides",
-  about: "About Us",
-  contact: "Let's Talk"
-};
-const enquiryForm = document.querySelector("[data-enquiry-form]");
-const enquiryResult = document.querySelector("[data-enquiry-result]");
-const enquiryStatus = document.querySelector("[data-enquiry-status]");
-const enquiryDraft = document.querySelector("#enquiry-draft");
-const emailDraftLink = document.querySelector("[data-email-draft]");
-const copyStatus = document.querySelector("[data-copy-status]");
-
-const clearDraft = () => {
-  enquiryResult.hidden = true;
-  enquiryDraft.value = "";
-  emailDraftLink.href = "mailto:info@hrm-solutions.com";
-  enquiryStatus.textContent = "";
-  copyStatus.textContent = "";
-};
-
-if (enquiryForm) {
-  enquiryForm.hidden = false;
-  enquiryForm.addEventListener("input", (event) => {
-    event.target.setCustomValidity?.("");
-    clearDraft();
-  });
-  enquiryForm.addEventListener("change", clearDraft);
-  enquiryForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    for (const field of enquiryForm.querySelectorAll("[required]")) {
-      field.setCustomValidity(field.value.trim() ? "" : "Please complete this field.");
-    }
-    if (!enquiryForm.reportValidity()) return;
-
-    const data = new FormData(enquiryForm);
-    const value = (key) => String(data.get(key) || "").trim();
-    const subject = `${value("interest")} enquiry${value("company") ? ` — ${value("company")}` : ""}`;
-    const body = [
-      "Hello HRM-Solutions,", "",
-      `I'm interested in: ${value("interest")}`, "",
-      value("message"), "",
-      `Name: ${value("name")}`,
-      `Email: ${value("email")}`,
-      ...(value("company") ? [`Company: ${value("company")}`] : [])
-    ].join("\n");
-    enquiryDraft.value = `To: info@hrm-solutions.com\nSubject: ${subject}\n\n${body}`;
-    emailDraftLink.href = `mailto:info@hrm-solutions.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    enquiryResult.hidden = false;
-    enquiryStatus.textContent = "Your draft is ready. Review it below, then open your email app to send it.";
-    copyStatus.textContent = "";
-  });
-  document.querySelector("[data-copy-enquiry]")?.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(enquiryDraft.value);
-      copyStatus.textContent = "Email text copied. Paste it into a new email to info@hrm-solutions.com.";
-    } catch {
-      enquiryDraft.focus();
-      enquiryDraft.select();
-      copyStatus.textContent = "Select and copy the draft above, then paste it into your email app.";
-    }
-  });
-}
-
-document.body.classList.add("has-view-routing");
-
-if (window.lucide) {
-  window.lucide.createIcons();
-}
-
-navToggle?.addEventListener("click", () => {
-  const isOpen = nav?.classList.toggle("is-open");
-  document.body.classList.toggle("nav-open", Boolean(isOpen));
-  navToggle.setAttribute("aria-expanded", String(Boolean(isOpen)));
-  navToggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
-});
-
+const nav = document.querySelector("[data-nav]");
+const navToggle = document.querySelector("[data-nav-toggle]");
+document.body.classList.add("js-enabled");
+if (navToggle) navToggle.hidden = false;
 const closeNavigation = () => {
   nav?.classList.remove("is-open");
   document.body.classList.remove("nav-open");
   navToggle?.setAttribute("aria-expanded", "false");
   navToggle?.setAttribute("aria-label", "Open navigation");
 };
-
-const getViewFromHash = (hash) => {
-  const requestedView = hash.replace(/^#/, "");
-  return validViews.has(requestedView) ? requestedView : "home";
-};
-
-const showView = (view, shouldFocus = false) => {
-  document.title = `${viewTitles[view]} | HRM-Solutions`;
-  document.body.dataset.currentView = view;
-  viewSections.forEach((section) => {
-    const isActive = section.dataset.view === view;
-    section.classList.toggle("is-active-view", isActive);
-    section.setAttribute("aria-hidden", String(!isActive));
-  });
-
-  routedLinks.forEach((link) => {
-    const linkView = getViewFromHash(link.hash);
-    const isPrimaryNavLink = link.closest("[data-nav]");
-
-    if (isPrimaryNavLink && linkView === view) {
-      link.setAttribute("aria-current", "page");
-    } else {
-      link.removeAttribute("aria-current");
-    }
-  });
-
-  closeNavigation();
-  window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
-
-  if (shouldFocus) {
-    const activeHeading = document.querySelector(`[data-view="${view}"].is-active-view h1, [data-view="${view}"].is-active-view h2`);
-    activeHeading?.setAttribute("tabindex", "-1");
-    activeHeading?.focus({ preventScroll: true });
-  }
-};
-
-document.addEventListener("click", (event) => {
-  const link = event.target instanceof Element ? event.target.closest('a[href^="#"]') : null;
-
-  if (link?.hash === "#main-content") {
-    event.preventDefault();
-    document.querySelector("#main-content")?.focus();
-    return;
-  }
-
-  if (!link || !validViews.has(link.hash.slice(1))) {
-    return;
-  }
-
-  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-
-  if (link.dataset.interest && enquiryForm) {
-    enquiryForm.elements.interest.value = link.dataset.interest;
-    clearDraft();
-  }
-
-  event.preventDefault();
-  const view = getViewFromHash(link.hash);
-
-  if (window.location.hash === `#${view}`) {
-    showView(view, true);
-  } else {
-    window.location.hash = view;
-  }
+navToggle?.addEventListener("click", () => {
+  const open = nav.classList.toggle("is-open");
+  document.body.classList.toggle("nav-open", open);
+  navToggle.setAttribute("aria-expanded", String(open));
+  navToggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
 });
-
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && nav?.classList.contains("is-open")) {
-    closeNavigation();
-    navToggle?.focus();
+    closeNavigation(); navToggle?.focus();
   }
 });
-
 document.addEventListener("click", (event) => {
-  if (event.target instanceof Node && !header?.contains(event.target)) closeNavigation();
+  if (!(event.target instanceof Element)) return;
+  if (!header?.contains(event.target) || event.target.closest("[data-nav] a")) closeNavigation();
+  if (event.target.closest('a[href="#main-content"]')) {
+    event.preventDefault(); document.querySelector("#main-content")?.focus();
+  }
 });
-
 window.matchMedia("(min-width: 1120px)").addEventListener("change", closeNavigation);
+window.addEventListener("scroll", () => header?.classList.toggle("is-scrolled", window.scrollY > 10), { passive: true });
 
-window.addEventListener("hashchange", () => {
-  showView(getViewFromHash(window.location.hash), true);
-});
-
-window.addEventListener("scroll", () => {
-  header?.classList.toggle("is-scrolled", window.scrollY > 10);
-});
-
-const initialView = getViewFromHash(window.location.hash);
-if (!window.location.hash || !validViews.has(window.location.hash.slice(1))) {
-  window.history.replaceState(null, "", `#${initialView}`);
+const form = document.querySelector("[data-enquiry-form]");
+if (form) {
+  const result = form.querySelector("[data-enquiry-result]");
+  const status = form.querySelector("[data-enquiry-status]");
+  const draft = form.querySelector("#enquiry-draft");
+  const emailLink = form.querySelector("[data-email-draft]");
+  const copyStatus = form.querySelector("[data-copy-status]");
+  const interest = form.elements.interest;
+  const services = {
+    hiring: { label: "US staffing / hiring requirement", help: "Include the role title, number of openings, essential skills, work arrangement, and interview process." },
+    implementation: { label: "Software implementation", help: "Include the software name if selected, your current process, user groups, and the result you want to achieve." },
+    "staffing-software": { label: "Software implementation for a staffing business", help: "Describe your recruiting workflow, the platform you use or are considering, and what needs to change." }
+  };
+  const updateHelp = () => {
+    form.querySelector("[data-requirements-help]").textContent = services[interest.value]?.help || "Describe the role you need to fill or the software project you want to implement.";
+  };
+  const preset = new URLSearchParams(window.location.search).get("service");
+  if (Object.hasOwn(services, preset)) interest.value = preset;
+  updateHelp(); form.hidden = false;
+  const clearDraft = () => {
+    result.hidden = true; draft.value = "";
+    emailLink.href = "mailto:info@hrm-solutions.com";
+    status.textContent = ""; copyStatus.textContent = "";
+  };
+  form.addEventListener("input", (event) => {
+    event.target.setCustomValidity?.(""); clearDraft(); updateHelp();
+  });
+  form.addEventListener("change", () => { clearDraft(); updateHelp(); });
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    for (const field of form.querySelectorAll("[required]")) {
+      field.setCustomValidity(field.value.trim() ? "" : "Please complete this field.");
+    }
+    if (!form.reportValidity()) return;
+    const data = new FormData(form);
+    const value = (key) => String(data.get(key) || "").trim();
+    const service = services[value("interest")]?.label;
+    if (!service) return;
+    const subject = `${service}${value("company") ? ` — ${value("company")}` : ""}`;
+    const body = ["Hello HRM-Solutions,", "", `Request: ${service}`, "", value("message"), "",
+      `Name: ${value("name")}`, `Email: ${value("email")}`,
+      ...[["company", "Company"], ["role", "Role"], ["location", "Work or project location"], ["timing", "Timeline"]]
+        .filter(([key]) => value(key)).map(([key, label]) => `${label}: ${value(key)}`)
+    ].join("\n");
+    draft.value = `To: info@hrm-solutions.com\nSubject: ${subject}\n\n${body}`;
+    emailLink.href = `mailto:info@hrm-solutions.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    result.hidden = false;
+    status.textContent = "Your draft is ready. Review it below, then open your email app to send it.";
+    copyStatus.textContent = "";
+  });
+  form.querySelector("[data-copy-enquiry]").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(draft.value);
+      copyStatus.textContent = "Email text copied. Paste it into a new email to info@hrm-solutions.com.";
+    } catch {
+      draft.focus(); draft.select();
+      copyStatus.textContent = "Select and copy the draft above, then paste it into your email app.";
+    }
+  });
 }
-showView(initialView);
