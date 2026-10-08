@@ -34,7 +34,7 @@ async function render(page, body, destination, notFound = false) {
     robots: notFound ? "noindex, follow" : "index, follow", view: page.slug || "home", body, navigation,
     preload: !page.slug ? '<link rel="preload" href="/assets/images/hrm-hero.webp" as="image" type="image/webp" />' : "",
     structuredData: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replaceAll("<", "\\u003c"),
-    conversation: page.slug === "contact" ? "" : '<aside class="conversation-band" aria-label="Discuss your requirements"><div class="container"><div><h2>Start with your next requirement.</h2><p>Share a US hiring brief or outline your software implementation project.</p></div><a class="btn btn-accent" href="/contact/">Request support</a></div></aside>'
+    conversation: page.slug === "contact" ? "" : '<aside class="conversation-band" aria-label="Discuss your requirements"><div class="container"><div><h2>Build your next technology team.</h2><p>Share your US IT staffing requirements with our recruitment team.</p></div><a class="btn btn-accent" href="/contact/?service=hiring">Submit Your Staffing Requirement</a></div></aside>'
   };
   const html = template.replace(/\{\{(\w+)\}\}/g, (_, key) => {
     if (!(key in tokens)) throw new Error(`Unknown template token: ${key}`);
