@@ -35,6 +35,10 @@ document.addEventListener("keydown", (event) => {
     closeNavigation(); navToggle?.focus();
   }
 });
+// The navigation is a disclosure, not a modal: let Tab leave it normally.
+header?.addEventListener("focusout", (event) => {
+  if (event.relatedTarget && !header.contains(event.relatedTarget)) closeNavigation();
+});
 document.addEventListener("click", (event) => {
   if (!(event.target instanceof Element)) return;
   if (!header?.contains(event.target) || event.target.closest("[data-nav] a")) closeNavigation();
