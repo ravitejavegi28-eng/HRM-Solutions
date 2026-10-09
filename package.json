@@ -5,8 +5,13 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node scripts/build.mjs && node --test tests/site.test.mjs",
+    "test": "node scripts/build.mjs && node --test tests/*.test.mjs",
     "preview": "node scripts/build.mjs && node scripts/preview.mjs"
   },
-  "engines": { "node": "22.x" }
+  "engines": {
+    "node": "22.x"
+  },
+  "dependencies": {
+    "nodemailer": "10.0.16"
+  }
 }

@@ -74,7 +74,8 @@ test("hiring and implementation calls to action match valid form choices", () =>
     for (const match of html.matchAll(/href="\/contact\/\?service=([^"]+)"/g)) assert.ok(options.includes(match[1]));
   }
   assert.deepEqual(options.sort(), ["hiring", "implementation", "staffing-software"].sort());
-  assert.ok(contact.includes("Nothing is sent by this website."));
+  assert.ok(contact.includes("data-send-status"));
+  assert.ok(contact.includes("name=\"website\""));
   assert.ok(contact.includes("<noscript>"));
 });
 

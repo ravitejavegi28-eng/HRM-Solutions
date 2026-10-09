@@ -1,12 +1,13 @@
 # HRM-Solutions website
 
-A static website for US staffing and software implementation. Each page is built as complete HTML, with no client-side router or production server required.
+A static website for US staffing and software implementation. Each page is built as complete HTML, with no client-side router. A Vercel Function delivers contact enquiries through Hostinger SMTP.
 
 ## Local development
 
 Use Node.js 22 or newer. There are no third-party build dependencies.
 
 ```sh
+npm ci
 npm run build
 npm test
 npm run preview
@@ -22,7 +23,7 @@ Preview: http://127.0.0.1:8766/ . Rebuild and reload after source changes.
 
 ## Deployment
 
-Vercel is configured to run `node scripts/build.mjs` and publish only `public/`. No dependency install is needed. Other static hosts can serve that same directory. Do not publish the repository root: it can contain local project documents.
+Vercel is configured to run `node scripts/build.mjs` and publish only `public/`. Vercel installs dependencies with `npm ci --ignore-scripts` and deploys `api/contact.js` alongside the static pages. Other static hosts can serve the pages, but require a compatible backend for the form. Do not publish the repository root: it can contain local project documents.
 
 The build produces `/`, `/us-staffing/`, `/software-implementation/`, `/resources/`, `/about/`, `/contact/`, `/sitemap.xml`, `/robots.txt`, and `404.html`. Configure other hosts to use `404.html` with HTTP status 404 for unknown paths, rather than serving the homepage.
 
@@ -48,4 +49,18 @@ After production deployment:
 4. Review indexing and performance reports once data is available. Keywords are client suggestions, not measured search-volume research.
 5. Obtain approved business/team details and case studies before publishing them.
 
-The enquiry form prepares an email draft; it does not send messages or store leads. Direct submission requires a separately configured delivery service. No analytics or account-verification identifiers have been invented.
+## Contact form delivery
+
+Set these server-only Production environment variables in Vercel, then deploy:
+
+- `SMTP_HOST`: `smtp.hostinger.com`
+- `SMTP_PORT`: `465` (TLS)
+- `SMTP_USER`: `info@hrm-solutions.com`
+- `SMTP_PASS`: the mailbox password, saved as a Secret; never commit it
+- `CONTACT_TO_EMAIL`: `info@hrm-solutions.com`
+
+The browser calls `/api/contact/`. The server validates fields, uses a fixed sender and recipient, and sets Reply-To to the visitor. It does not store leads in a database. Messages remain in the receiving mailbox. Honeypot and signed timing tokens provide basic spam checks; throttling and token replay checks are instance-local, not a distributed abuse guarantee.
+
+The static local preview does not run the email function and shows an email fallback. `npm test` tests the handler with simulated SMTP and never sends mail. Production delivery still requires a manual test: submit an enquiry with an email you control, confirm receipt in Hostinger (including Spam), and verify Reply targets that email. A successful SMTP response does not guarantee inbox placement.
+
+No analytics or account-verification identifiers have been invented.

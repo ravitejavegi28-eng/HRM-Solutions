@@ -1918,3 +1918,11 @@ body[data-current-view="home"] .related-service h2 { font-size: clamp(26px, 3vw,
   .primary-nav .nav-contact { justify-content: center; }
   .brand small { font-size: 11px; }
 }
+
+/* Contact status stays visible to keyboard and screen-reader users. */
+.form-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.form-feedback { margin-top: 18px; font-weight: 600; }
+.form-feedback:empty { display: none; }
+.form-feedback[data-state="error"] { color: #9f2318; }
+.form-feedback[data-state="success"] { color: #17643b; }
+.enquiry-form button:disabled { opacity: .7; cursor: default; transform: none; }

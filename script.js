@@ -51,61 +51,70 @@ window.addEventListener("scroll", () => header?.classList.toggle("is-scrolled", 
 
 const form = document.querySelector("[data-enquiry-form]");
 if (form) {
-  const result = form.querySelector("[data-enquiry-result]");
-  const status = form.querySelector("[data-enquiry-status]");
-  const draft = form.querySelector("#enquiry-draft");
-  const emailLink = form.querySelector("[data-email-draft]");
-  const copyStatus = form.querySelector("[data-copy-status]");
+  const status = form.querySelector("[data-send-status]");
+  const button = form.querySelector('[type="submit"]');
   const interest = form.elements.interest;
   const services = {
-    hiring: { label: "US staffing / hiring requirement", help: "Include the role title, number of openings, essential skills, work arrangement, and interview process." },
-    implementation: { label: "Software implementation", help: "Include the software name if selected, your current process, user groups, and the result you want to achieve." },
-    "staffing-software": { label: "Software implementation for a staffing business", help: "Describe your recruiting workflow, the platform you use or are considering, and what needs to change." }
+    hiring: "Include the role title, number of openings, essential skills, work arrangement, and interview process.",
+    implementation: "Include the software name if selected, your current process, user groups, and the result you want to achieve.",
+    "staffing-software": "Describe your recruiting workflow, the platform you use or are considering, and what needs to change."
   };
   const updateHelp = () => {
-    form.querySelector("[data-requirements-help]").textContent = services[interest.value]?.help || "Describe the role you need to fill or the software project you want to implement.";
+    form.querySelector("[data-requirements-help]").textContent = services[interest.value] || "Describe the role you need to fill or the software project you want to implement.";
   };
   const preset = new URLSearchParams(window.location.search).get("service");
   if (Object.hasOwn(services, preset)) interest.value = preset;
   updateHelp(); form.hidden = false;
-  const clearDraft = () => {
-    result.hidden = true; draft.value = "";
-    emailLink.href = "mailto:info@hrm-solutions.com";
-    status.textContent = ""; copyStatus.textContent = "";
-  };
-  form.addEventListener("input", (event) => {
-    event.target.setCustomValidity?.(""); clearDraft(); updateHelp();
-  });
-  form.addEventListener("change", () => { clearDraft(); updateHelp(); });
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    for (const field of form.querySelectorAll("[required]")) {
-      field.setCustomValidity(field.value.trim() ? "" : "Please complete this field.");
-    }
-    if (!form.reportValidity()) return;
-    const data = new FormData(form);
-    const value = (key) => String(data.get(key) || "").trim();
-    const service = services[value("interest")]?.label;
-    if (!service) return;
-    const subject = `${service}${value("company") ? ` — ${value("company")}` : ""}`;
-    const body = ["Hello HRM-Solutions,", "", `Request: ${service}`, "", value("message"), "",
-      `Name: ${value("name")}`, `Email: ${value("email")}`,
-      ...[["company", "Company"], ["role", "Role"], ["location", "Work or project location"], ["timing", "Timeline"]]
-        .filter(([key]) => value(key)).map(([key, label]) => `${label}: ${value(key)}`)
-    ].join("\n");
-    draft.value = `To: info@hrm-solutions.com\nSubject: ${subject}\n\n${body}`;
-    emailLink.href = `mailto:info@hrm-solutions.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    result.hidden = false;
-    status.textContent = "Your draft is ready. Review it below, then open your email app to send it.";
-    copyStatus.textContent = "";
-  });
-  form.querySelector("[data-copy-enquiry]").addEventListener("click", async () => {
+  let token = "", tokenReadyAt = 0, loading = false, submitting = false;
+  const prepare = async () => {
+    loading = true; button.disabled = true; button.textContent = "Loading form...";
     try {
-      await navigator.clipboard.writeText(draft.value);
-      copyStatus.textContent = "Email text copied. Paste it into a new email to info@hrm-solutions.com.";
+      const response = await fetch("/api/contact/", { cache: "no-store", signal: AbortSignal.timeout(12000) });
+      const data = await response.json();
+      if (!response.ok || !data.token) throw new Error();
+      token = data.token; tokenReadyAt = Date.now() + 3200;
+      button.textContent = "Send enquiry";
     } catch {
-      draft.focus(); draft.select();
-      copyStatus.textContent = "Select and copy the draft above, then paste it into your email app.";
+      token = ""; button.textContent = "Retry connection";
+      status.textContent = "Online sending is unavailable. Your text stays here. Try again or email info@hrm-solutions.com.";
+      status.dataset.state = "error";
+    } finally { loading = false; button.disabled = false; }
+  };
+  form.addEventListener("input", event => { event.target.setCustomValidity?.(""); updateHelp(); });
+  form.addEventListener("change", updateHelp);
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (submitting || loading) return;
+    for (const field of form.querySelectorAll("[required]")) field.setCustomValidity(field.value.trim() ? "" : "Please complete this field.");
+    if (!form.reportValidity()) return;
+    if (!token) { await prepare(); return; }
+    if (Date.now() < tokenReadyAt) { status.textContent = "Please wait a few seconds, then send your enquiry."; return; }
+    const values = Object.fromEntries(new FormData(form));
+    submitting = true; button.disabled = true; button.textContent = "Sending...";
+    form.setAttribute("aria-busy", "true"); status.textContent = "Sending your enquiry..."; status.dataset.state = "";
+    // Keep submitted fields stable during the request, and preserve them on failure.
+    const fields = [...form.querySelectorAll("input, select, textarea")]; fields.forEach(field => field.disabled = true);
+    let succeeded = false;
+    try {
+      const response = await fetch("/api/contact/", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...values, token }), signal: AbortSignal.timeout(55000)
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Sending could not be confirmed. Please email info@hrm-solutions.com.");
+      succeeded = true; status.textContent = data.message; status.dataset.state = "success";
+      form.reset(); if (Object.hasOwn(services, preset)) interest.value = preset; updateHelp();
+      button.textContent = "Enquiry submitted";
+    } catch (error) {
+      status.textContent = error.name === "TimeoutError" || error instanceof TypeError
+        ? "We could not confirm sending. Your text stays here. Please email info@hrm-solutions.com if you need help."
+        : error.message;
+      status.dataset.state = "error"; token = "";
+      button.textContent = "Retry connection";
+    } finally {
+      submitting = false; form.removeAttribute("aria-busy"); fields.forEach(field => field.disabled = false);
+      button.disabled = succeeded; status.focus();
     }
   });
+  prepare();
 }
