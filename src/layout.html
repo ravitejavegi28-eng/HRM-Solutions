@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>document.documentElement.classList.add("js-enabled");</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{title}}</title>
   <meta name="description" content="{{description}}" />
@@ -20,9 +21,8 @@
   <meta name="twitter:description" content="{{description}}" />
   <meta name="twitter:image" content="https://www.hrm-solutions.com/assets/images/hrm-hero.webp" />
   <link rel="icon" href="/assets/favicon-hrm.svg" type="image/svg+xml" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin />
   {{preload}}
   <link rel="stylesheet" href="/styles.css" />
   <script type="application/ld+json">{{structuredData}}</script>

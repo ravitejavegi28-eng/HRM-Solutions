@@ -1,3 +1,6 @@
+/* Locally hosted Latin variable fonts: optional avoids a late font swap. */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400 800; font-display: optional; src: url("/assets/fonts/inter-latin.woff2") format("woff2"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 600 800; font-display: optional; src: url("/assets/fonts/jakarta-latin.woff2") format("woff2"); }
 :root {
   --ink: #08111f;
   --navy: #0c1b36;
@@ -274,7 +277,7 @@ h3 {
   display: flex;
   align-items: stretch;
   overflow: hidden;
-  background: var(--navy) url("assets/images/hrm-hero.webp") center center / cover no-repeat;
+  background: var(--navy);
   color: #fff;
 }
 
@@ -1888,8 +1891,8 @@ body[data-current-view="contact"] .conversation-band { display: none; }
 [id] { scroll-margin-top: 100px; }
 .related-service p { max-width: 760px; color: var(--slate-dark); }
 @media (max-width: 1119px) {
-  body:not(.js-enabled) .site-header { position: relative; grid-template-columns: 1fr; }
-  body:not(.js-enabled) .primary-nav { display: flex; position: static; max-height: none; box-shadow: none; border: 0; padding: 0; }
+  html:not(.js-enabled) .site-header { position: relative; grid-template-columns: 1fr; }
+  html:not(.js-enabled) .primary-nav { display: flex; position: static; max-height: none; box-shadow: none; border: 0; padding: 0; }
 }
 @media (max-width: 759px) {
   .editorial-grid { grid-template-columns: 1fr; gap: 36px; }
@@ -1926,3 +1929,9 @@ body[data-current-view="home"] .related-service h2 { font-size: clamp(26px, 3vw,
 .form-feedback[data-state="error"] { color: #9f2318; }
 .form-feedback[data-state="success"] { color: #17643b; }
 .enquiry-form button:disabled { opacity: .7; cursor: default; transform: none; }
+
+/* Discover the hero in HTML and reserve its existing full-bleed photo layer. */
+.hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+/* White footer lettering meets normal-text contrast requirements. */
+.footer-brand .brand-mark { background: #0b766f; }

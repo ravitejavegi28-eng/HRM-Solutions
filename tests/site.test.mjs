@@ -46,7 +46,8 @@ test("internal links, resource anchors, and local assets resolve", async () => {
       }
     }
     for (const tag of html.matchAll(/<img\b[^>]+>/g)) {
-      assert.match(tag[0], /alt="[^"]+"/); assert.match(tag[0], /width="\d+"/); assert.match(tag[0], /height="\d+"/);
+      assert.match(tag[0], /alt="[^"]*"/);
+      if (/alt=""/.test(tag[0])) assert.match(tag[0], /aria-hidden="true"/, "Empty alt must be explicitly decorative"); assert.match(tag[0], /width="\d+"/); assert.match(tag[0], /height="\d+"/);
     }
   }
 });

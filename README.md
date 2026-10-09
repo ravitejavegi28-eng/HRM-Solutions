@@ -64,3 +64,9 @@ The browser calls `/api/contact/`. The server validates fields, uses a fixed sen
 The static local preview does not run the email function and shows an email fallback. `npm test` tests the handler with simulated SMTP and never sends mail. Production delivery still requires a manual test: submit an enquiry with an email you control, confirm receipt in Hostinger (including Spam), and verify Reply targets that email. A successful SMTP response does not guarantee inbox placement.
 
 No analytics or account-verification identifiers have been invented.
+
+## Performance assets
+
+The existing Inter and Plus Jakarta Sans Latin variable fonts are self-hosted in `assets/fonts/` with their OFL licenses. Font preloads and `font-display: optional` avoid a late text swap. The small head script selects the enhanced mobile header before first paint; navigation remains visible without JavaScript.
+
+The homepage uses the original hero photo on desktop and a 960px copy on mobile. The story image has 640px/1280px responsive sources. Preserve matching preload media queries when replacing these assets.
