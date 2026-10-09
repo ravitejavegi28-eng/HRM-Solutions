@@ -1,0 +1,17 @@
+# Only the site source, build scripts, and API belong in deployment uploads.
+.git
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+*.pdf
+.pnpm-store
+node_modules
+public
+comp-vision-publish
+quality-inspector
+tests
+SECURITY-AUDIT.md

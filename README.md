@@ -59,7 +59,7 @@ Set these server-only Production environment variables in Vercel, then deploy:
 - `SMTP_PASS`: the mailbox password, saved as a Secret; never commit it
 - `CONTACT_TO_EMAIL`: `info@hrm-solutions.com`
 
-The browser calls `/api/contact/`. The server validates fields, uses a fixed sender and recipient, and sets Reply-To to the visitor. It does not store leads in a database. Messages remain in the receiving mailbox. Honeypot and signed timing tokens provide basic spam checks; throttling and token replay checks are instance-local, not a distributed abuse guarantee.
+The browser calls `/api/contact/`. The server validates fields, uses a fixed sender and recipient, and sets Reply-To to the visitor. It does not store leads in a database. Messages remain in the receiving mailbox. Honeypot and signed timing tokens provide basic spam checks. Limits are 30 API requests per minute and 5 delivery attempts per 10 minutes per source IP per function instance. Throttling and token replay checks are instance-local, not a distributed abuse guarantee. A shared Vercel firewall limit is still pending configuration.
 
 The static local preview does not run the email function and shows an email fallback. `npm test` tests the handler with simulated SMTP and never sends mail. Production delivery still requires a manual test: submit an enquiry with an email you control, confirm receipt in Hostinger (including Spam), and verify Reply targets that email. A successful SMTP response does not guarantee inbox placement.
 
@@ -70,3 +70,11 @@ No analytics or account-verification identifiers have been invented.
 The existing Inter and Plus Jakarta Sans Latin variable fonts are self-hosted in `assets/fonts/` with their OFL licenses. Font preloads and `font-display: optional` avoid a late text swap. The small head script selects the enhanced mobile header before first paint; navigation remains visible without JavaScript.
 
 The homepage uses the original hero photo on desktop and a 960px copy on mobile. The story image has 640px/1280px responsive sources. Preserve matching preload media queries when replacing these assets.
+
+## Security maintenance
+
+The deployment applies a restrictive Content Security Policy, HTTPS, clickjacking protection, MIME sniffing protection, and a limited permissions policy. The CSP hash authorizes the exact small inline header bootstrap; changing that script requires updating the hash in `vercel.json`. The local preview applies the same headers for testing.
+
+Only the assets explicitly listed in `scripts/build.mjs` are published. Add new public assets to that list deliberately. Keep credentials in server-only Vercel environment variables, never browser JavaScript or committed files. SMTP debug logging stays disabled. Contact emails are plain text with fixed sender/recipient and validated visitor Reply-To.
+
+Run `npm test` and `npm audit --omit=dev` after dependency or form changes. See `SECURITY-AUDIT.md` for the reviewed scope and remaining infrastructure work.

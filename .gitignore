@@ -3,3 +3,11 @@
 .env
 .env.*
 /.vercel/
+
+# Private credentials and local artifacts
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+/.pnpm-store/

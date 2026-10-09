@@ -49,7 +49,19 @@ for (const page of pages) {
 }
 await render({ slug: "404", title: "Page Not Found | HRM-Solutions", description: "Find US staffing and software implementation services at HRM-Solutions." },
   '<section class="route-hero"><div class="container route-hero-content"><p class="eyebrow eyebrow-light">Page not found</p><h1>Let\'s get you to the right place.</h1><p>The page may have moved. Explore our services or contact us about your requirements.</p><a class="btn btn-accent" href="/">Return to home</a></div></section>', resolve(output, "404.html"), true);
-await cp(resolve(root, "assets"), resolve(output, "assets"), { recursive: true });
+// Only reviewed public assets are copied; private files added under assets stay private.
+const publicAssets = [
+  'favicon-hrm.svg', 'fonts/inter-latin.woff2', 'fonts/jakarta-latin.woff2',
+  'fonts/OFL-Inter.txt', 'fonts/OFL-PlusJakartaSans.txt',
+  'images/global-network.webp', 'images/hrm-hero.webp', 'images/hrm-hero-960.webp',
+  'images/industry-it.webp', 'images/industry-it-640.webp',
+  'images/industry-staffing.webp', 'images/solutions-hr-tech.jpg'
+];
+for (const asset of publicAssets) {
+  const destination = resolve(output, 'assets', asset);
+  await mkdir(dirname(destination), { recursive: true });
+  await cp(resolve(root, 'assets', asset), destination);
+}
 for (const file of ["styles.css", "script.js"]) await cp(resolve(root, file), resolve(output, file));
 await writeFile(resolve(output, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${site.origin}/sitemap.xml\n`);
 await writeFile(resolve(output, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map(page => `  <url><loc>${site.origin}${pagePath(page)}</loc><lastmod>${site.updated}</lastmod></url>`).join("\n")}\n</urlset>\n`);

@@ -4,10 +4,13 @@ import { resolve, dirname, extname, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const output = resolve(dirname(fileURLToPath(import.meta.url)), "../public");
-const mime = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".xml": "application/xml; charset=utf-8", ".txt": "text/plain; charset=utf-8", ".svg": "image/svg+xml", ".webp": "image/webp", ".jpg": "image/jpeg", ".png": "image/png" };
+const mime = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".xml": "application/xml; charset=utf-8", ".txt": "text/plain; charset=utf-8", ".svg": "image/svg+xml", ".webp": "image/webp", ".jpg": "image/jpeg", ".png": "image/png", ".woff2": "font/woff2" };
+
+const securityHeaders = JSON.parse(await readFile(new URL("../vercel.json", import.meta.url), "utf8")).headers[0].headers;
 
 export function createPreviewServer() {
   return createServer(async (request, response) => {
+    for (const { key, value } of securityHeaders) response.setHeader(key, value);
     if (!["GET", "HEAD"].includes(request.method)) {
       response.writeHead(405, { Allow: "GET, HEAD" }); response.end(); return;
     }
